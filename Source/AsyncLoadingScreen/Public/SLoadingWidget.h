@@ -32,6 +32,9 @@ public:
 	void ConstructLoadingIcon(const FLoadingWidgetSettings& Settings);
 
 protected:
+
+	const FLoadingWidgetSettings* WidgetSettings = nullptr;
+
 	// Placeholder widgets
 	TSharedRef<SWidget> LoadingIcon = SNullWidget::NullWidget;
 	// Image slate brush list

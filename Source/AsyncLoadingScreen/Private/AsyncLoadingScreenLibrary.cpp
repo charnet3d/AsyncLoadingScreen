@@ -41,24 +41,26 @@ void UAsyncLoadingScreenLibrary::StopLoadingScreen()
 	GetMoviePlayer()->StopMovie();
 }
 
-void UAsyncLoadingScreenLibrary::PreloadBackgroundImages()
+void UAsyncLoadingScreenLibrary::PreloadImages()
 {
 	if (FAsyncLoadingScreenModule::IsAvailable())
 	{
 		FAsyncLoadingScreenModule& LoadingScreenModule = FAsyncLoadingScreenModule::Get();
-		if (LoadingScreenModule.IsPreloadBackgroundImagesEnabled())
+		if (LoadingScreenModule.IsPreloadImagesEnabled())
 		{
 			LoadingScreenModule.LoadBackgroundImages();
-		}		
+			LoadingScreenModule.LoadSequenceImages();
+		}
 	}
 }
 
-void UAsyncLoadingScreenLibrary::RemovePreloadedBackgroundImages()
+void UAsyncLoadingScreenLibrary::RemovePreloadedImages()
 {
 	if (FAsyncLoadingScreenModule::IsAvailable())
 	{
 		FAsyncLoadingScreenModule& LoadingScreenModule = FAsyncLoadingScreenModule::Get();
 		LoadingScreenModule.RemoveAllBackgroundImages();
+		LoadingScreenModule.RemoveAllSequenceImages();
 	}
 }
 

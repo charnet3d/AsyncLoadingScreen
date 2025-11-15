@@ -7,6 +7,8 @@
  ************************************************************************************/
 
 #include "SLoadingWidget.h"
+
+#include "AsyncLoadingScreen.h"
 #include "Widgets/Images/SImage.h"
 #include "Slate/DeferredCleanupSlateBrush.h"
 #include "Widgets/Layout/SSpacer.h"
@@ -61,6 +63,7 @@ SThrobber::EAnimation SLoadingWidget::GetThrobberAnimation(const FThrobberSettin
 
 void SLoadingWidget::ConstructLoadingIcon(const FLoadingWidgetSettings& Settings)
 {
+	WidgetSettings = &Settings;
 	if (Settings.LoadingIconType == ELoadingIconType::LIT_ImageSequence)
 	{
 		// Loading Widget is image sequence
@@ -70,13 +73,37 @@ void SLoadingWidget::ConstructLoadingIcon(const FLoadingWidgetSettings& Settings
 			ImageIndex = 0;
 
 			FVector2D Scale = Settings.ImageSequenceSettings.Scale;
+			FVector2D DesiredImageSize = Settings.ImageSequenceSettings.DesiredSize;
 
-			for (auto Image: Settings.ImageSequenceSettings.Images)
+			for (int i = 0; i < Settings.ImageSequenceSettings.Images.Num(); ++i)
 			{
-				if (Image)
+				UTexture2D* LoadingImage = nullptr;
+				FAsyncLoadingScreenModule& LoadingScreenModule = FAsyncLoadingScreenModule::Get();
+				if (LoadingScreenModule.IsPreloadImagesEnabled())
 				{
-					CleanupBrushList.Add(FDeferredCleanupSlateBrush::CreateBrush(Image, FVector2D(Image->GetSurfaceWidth() * Scale.X, Image->GetSurfaceHeight() * Scale.Y)));					
-				}				
+					// Get Preloaded image
+					TArray<UTexture2D*> SequenceImages = LoadingScreenModule.GetSequenceImages();
+					if (!SequenceImages.IsEmpty() && SequenceImages.IsValidIndex(i))
+					{
+						LoadingImage = SequenceImages[i];
+					}
+				}
+
+				// Not preloaded
+				if (!LoadingImage)
+				{
+					// Load background from settings
+					const FSoftObjectPath& ImageAsset = Settings.ImageSequenceSettings.Images[i];
+					LoadingImage = Cast<UTexture2D>(ImageAsset.TryLoad());
+				}
+
+				if (LoadingImage)
+				{
+					double Width = (DesiredImageSize.X > 0) ? DesiredImageSize.X : LoadingImage->GetSurfaceWidth() * Scale.X;
+					double Height = (DesiredImageSize.Y > 0) ? DesiredImageSize.Y : LoadingImage->GetSurfaceHeight() * Scale.Y;
+					UE_LOG(LogTemp, Warning, TEXT("ImageWidth: %.2f Scale.X: %.2f - ImageHeight: %.2f Scale.Y: %.2f"), LoadingImage->GetSurfaceWidth(), Scale.X, LoadingImage->GetSurfaceHeight(), Scale.Y);
+					CleanupBrushList.Add(FDeferredCleanupSlateBrush::CreateBrush(LoadingImage, FVector2D(Width, Height)));
+				}
 			}
 		
 			// Create Image slate widget
@@ -115,14 +142,26 @@ void SLoadingWidget::ConstructLoadingIcon(const FLoadingWidgetSettings& Settings
 	LoadingIcon.Get().SetRenderTransform(FSlateRenderTransform(FScale2D(Settings.TransformScale), Settings.TransformTranslation));
 	LoadingIcon.Get().SetRenderTransformPivot(Settings.TransformPivot);
 
-	// Hide loading widget when level loading is done if bHideLoadingWidgetWhenCompletes is true 
-	if (Settings.bHideLoadingWidgetWhenCompletes)
+	// Hide loading widget when level loading is done if bHideLoadingWidgetWhenCompletes is true
+	// And Hide it until movies are finish when bHideUntilMoviesFinishPlaying is true
+	if (Settings.bHideLoadingWidgetWhenCompletes || Settings.bHideUntilMoviesFinishPlaying)
 	{		
 		SetVisibility(TAttribute<EVisibility>::Create(TAttribute<EVisibility>::FGetter::CreateRaw(this, &SLoadingWidget::GetLoadingWidgetVisibility)));
-	}	
+	}
 }
 
 EVisibility SLoadingWidget::GetLoadingWidgetVisibility() const
 {
-	return GetMoviePlayer()->IsLoadingFinished() ? EVisibility::Hidden : EVisibility::Visible;
+	if (!WidgetSettings) return EVisibility::Visible;
+
+	if (WidgetSettings->bHideUntilMoviesFinishPlaying && GetMoviePlayer()->IsMovieCurrentlyPlaying())
+	{
+		return EVisibility::Hidden;
+	}
+
+	if (WidgetSettings->bHideLoadingWidgetWhenCompletes && GetMoviePlayer()->IsLoadingFinished())
+	{
+		return EVisibility::Hidden;
+	}
+	return EVisibility::Visible;
 }

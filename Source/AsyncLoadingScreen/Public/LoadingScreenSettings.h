@@ -169,11 +169,19 @@ struct FImageSequenceSettings
 
 	/** An array of images for animating the loading icon.*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting", meta = (AllowedClasses = "/Script/Engine.Texture2D"))
-	TArray<TObjectPtr<UTexture2D>> Images;
+	TArray<FSoftObjectPath> Images;
 
-	/** Scale of the images.*/
+	/** Scale of the images.
+	 * The values in DesiredSize take priority when != 0, each dimension taken separately.
+	 * Example: DesiredSize=(128, 0) and Scale=(0.75,0.5)
+	 * means the final width = 128px and the final height is the original height * 0.5 Scale.
+	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
 	FVector2D Scale = FVector2D(1.0f, 1.0f);
+
+	/** Desired size of the images.*/
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FVector2D DesiredSize = FVector2D(0.0f, 0.0f);
 
 	/**
 	 * Time in second to update the images, the smaller value the faster of the animation. A zero value will update the images every frame.
@@ -227,6 +235,16 @@ struct ASYNCLOADINGSCREEN_API FLoadingWidgetSettings
 	GENERATED_BODY()
 
 	FLoadingWidgetSettings();
+
+	bool bIsStartup = false;
+
+	/** Will the loading widget wait for movies to finish before appearing */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	bool bHideUntilMoviesFinishPlaying = true;
+
+	/** Hide the loading widget when the level loading is complete*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Widget Setting")
+	bool bHideLoadingWidgetWhenCompletes = false;
 
 	/** Loading icon type*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
@@ -287,10 +305,6 @@ struct ASYNCLOADINGSCREEN_API FLoadingWidgetSettings
 	/** Empty space between the loading text and the loading icon */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Widget Setting")
 	float Space = 1.0f;
-
-	/** Hide the loading widget when the level loading is complete*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Widget Setting")
-	bool bHideLoadingWidgetWhenCompletes = false;
 };
 
 
@@ -688,16 +702,16 @@ public:
 	 * 
 	 * However, you can manually remove all the preloaded background
 	 * images by calling the Blueprint function 
-	 * "RemovePreloadedBackgroundImages"
+	 * "RemovePreloadedImages"
 	 * 
 	 * You will need to re-load all background images by calling 
-	 * the Blueprint function "PreloadBackgroundImages"
+	 * the Blueprint function "PreloadImages"
 	 * 
-	 * Note: Call "PreloadBackgroundImages" before the "OpenLevel"
+	 * Note: Call "PreloadImages" before the "OpenLevel"
 	 * 
 	 */
 	UPROPERTY(Config, EditAnywhere, Category = "General")
-	bool bPreloadBackgroundImages = false;
+	bool bPreloadImages = false;
 
 	/**
 	 * The startup loading screen when you first open the game. Setup any studio logo movies here.

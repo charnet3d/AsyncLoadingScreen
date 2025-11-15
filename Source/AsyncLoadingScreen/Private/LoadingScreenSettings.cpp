@@ -18,8 +18,10 @@ FLoadingWidgetSettings::FLoadingWidgetSettings() : LoadingText(LOCTEXT("Loading"
 
 ULoadingScreenSettings::ULoadingScreenSettings(const FObjectInitializer& Initializer) : Super(Initializer)
 {
+	StartupLoadingScreen.LoadingWidget.bIsStartup = true;
 	StartupLoadingScreen.TipWidget.TipWrapAt = 1000.0f;
 	StartupLoadingScreen.bShowWidgetOverlay = false;
+	DefaultLoadingScreen.LoadingWidget.bIsStartup = false;
 	DefaultLoadingScreen.TipWidget.TipWrapAt = 1000.0f;
 	// Set default font
 	if (!IsRunningDedicatedServer())

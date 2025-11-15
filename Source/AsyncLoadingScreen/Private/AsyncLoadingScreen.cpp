@@ -26,22 +26,23 @@ void FAsyncLoadingScreenModule::StartupModule()
 	if (!IsRunningDedicatedServer() && FSlateApplication::IsInitialized())
 	{
 		const ULoadingScreenSettings* Settings = GetDefault<ULoadingScreenSettings>();
-				
-		if (IsMoviePlayerEnabled())
-		{
-			GetMoviePlayer()->OnPrepareLoadingScreen().AddRaw(this, &FAsyncLoadingScreenModule::PreSetupLoadingScreen);				
-		}		
-		
-		// If PreloadBackgroundImages option is check, load all background images into memory
-		if (Settings->bPreloadBackgroundImages)
+
+		// If PreloadImages option is check, load all background and Sequence images into memory
+		if (Settings->bPreloadImages)
 		{
 			LoadBackgroundImages();
+			LoadSequenceImages();
 		}
 
 		// Prepare the startup screen, the PreSetupLoadingScreen callback won't be called
 		// if we've already explicitly setup the loading screen
 		bIsStartupLoadingScreen = true;
 		SetupLoadingScreen(Settings->StartupLoadingScreen);
+
+		if (IsMoviePlayerEnabled())
+		{
+			GetMoviePlayer()->OnPrepareLoadingScreen().AddRaw(this, &FAsyncLoadingScreenModule::PreSetupLoadingScreen);
+		}
 	}	
 }
 
@@ -64,6 +65,11 @@ bool FAsyncLoadingScreenModule::IsGameModule() const
 TArray<UTexture2D*> FAsyncLoadingScreenModule::GetBackgroundImages()
 {
 	return bIsStartupLoadingScreen ? StartupBackgroundImages : DefaultBackgroundImages;
+}
+
+TArray<UTexture2D*> FAsyncLoadingScreenModule::GetSequenceImages()
+{
+	return bIsStartupLoadingScreen ? StartupSequenceImages : DefaultSequenceImages;
 }
 
 void FAsyncLoadingScreenModule::PreSetupLoadingScreen()
@@ -184,15 +190,49 @@ void FAsyncLoadingScreenModule::LoadBackgroundImages()
 	}
 }
 
+void FAsyncLoadingScreenModule::LoadSequenceImages()
+{
+	// Empty all background images array
+	RemoveAllSequenceImages();
+
+	const ULoadingScreenSettings* Settings = GetDefault<ULoadingScreenSettings>();
+
+	// Preload startup ImageSequence images
+	for (auto& Image : Settings->StartupLoadingScreen.LoadingWidget.ImageSequenceSettings.Images)
+	{
+		UTexture2D* LoadedImage = Cast<UTexture2D>(Image.TryLoad());
+		if (LoadedImage)
+		{
+			StartupSequenceImages.Add(LoadedImage);
+		}
+	}
+
+	// Preload default ImageSequence images
+	for (auto& Image : Settings->DefaultLoadingScreen.LoadingWidget.ImageSequenceSettings.Images)
+	{
+		UTexture2D* LoadedImage = Cast<UTexture2D> (Image.TryLoad());
+		if (LoadedImage)
+		{
+			DefaultSequenceImages.Add(LoadedImage);
+		}
+	}
+}
+
 void FAsyncLoadingScreenModule::RemoveAllBackgroundImages()
 {
 	StartupBackgroundImages.Empty();
 	DefaultBackgroundImages.Empty();
 }
 
-bool FAsyncLoadingScreenModule::IsPreloadBackgroundImagesEnabled()
+void FAsyncLoadingScreenModule::RemoveAllSequenceImages()
+{
+	StartupSequenceImages.Empty();
+	DefaultSequenceImages.Empty();
+}
+
+bool FAsyncLoadingScreenModule::IsPreloadImagesEnabled()
 {	
-	return GetDefault<ULoadingScreenSettings>()->bPreloadBackgroundImages;
+	return GetDefault<ULoadingScreenSettings>()->bPreloadImages;
 }
 
 #undef LOCTEXT_NAMESPACE

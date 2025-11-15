@@ -58,10 +58,12 @@ public:
 
 	TArray<UTexture2D*> GetBackgroundImages();
 
+	TArray<UTexture2D*> GetSequenceImages();
+	
 	/**
-	 * Check if "bPreloadBackgroundImages" option is enabled
+	 * Check if "bPreloadImages" option is enabled
 	 */
-	bool IsPreloadBackgroundImagesEnabled();
+	bool IsPreloadImagesEnabled();
 
 	/**
 	 * Is showing Startup Loading Screen?
@@ -74,9 +76,19 @@ public:
 	void LoadBackgroundImages();
 
 	/**
+	 * Load all Sequence images from settings into array
+	 */
+	void LoadSequenceImages();
+
+	/**
 	 * Remove all background images from array
 	 */
 	void RemoveAllBackgroundImages();
+
+	/**
+	 * Remove all Sequence images from array
+	 */
+	void RemoveAllSequenceImages();
 
 private:
 	/**
@@ -101,6 +113,14 @@ private:
 	// Default background images array
 	UPROPERTY()
 	TArray<class UTexture2D*> DefaultBackgroundImages;
+
+	// Startup Sequence images array
+	UPROPERTY()
+	TArray<class UTexture2D*> StartupSequenceImages;
+	
+	// Default Sequence images array
+	UPROPERTY()
+	TArray<class UTexture2D*> DefaultSequenceImages;
 
 	bool bIsStartupLoadingScreen = false;
 };

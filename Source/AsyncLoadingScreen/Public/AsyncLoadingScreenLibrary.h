@@ -83,29 +83,29 @@ public:
 	 * Load all background images into memory
 	 * 
 	 * Only use this function when: 
-	 * "bPreloadBackgroundImages" option is checked, 
-	 * and you called "RemovePreloadedBackgroundImages" before.
+	 * "bPreloadImages" option is checked, 
+	 * and you called "RemovePreloadedImages" before.
 	 * 
 	 * You don't need to use this if you never call
-	 * "RemovePreloadedBackgroundImages" function,
+	 * "RemovePreloadedImages" function,
 	 * since the background images are still in the memory
 	 * 
 	 * Note: Call this function before calling "OpenLevel" node.
 	 * 
 	 **/
 	UFUNCTION(BlueprintCallable, Category = "Async Loading Screen")
-	static void PreloadBackgroundImages();
+	static void PreloadImages();
 
 	/**
 	 * Remove all preloaded background images
 	 * 
 	 * Only need to use this function when 
-	 * "bPreloadBackgroundImages" is checked.
+	 * "bPreloadImages" is checked.
 	 * 
-	 * You need to call "PreloadBackgroundImages" 
+	 * You need to call "PreloadImages" 
 	 * to manually load all background images again.
 	 * 
 	 **/
 	UFUNCTION(BlueprintCallable, Category = "Async Loading Screen")
-	static void RemovePreloadedBackgroundImages();
+	static void RemovePreloadedImages();
 };
