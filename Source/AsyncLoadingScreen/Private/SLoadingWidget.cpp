@@ -101,7 +101,7 @@ void SLoadingWidget::ConstructLoadingIcon(const FLoadingWidgetSettings& Settings
 				{
 					double Width = (DesiredImageSize.X > 0) ? DesiredImageSize.X : LoadingImage->GetSurfaceWidth() * Scale.X;
 					double Height = (DesiredImageSize.Y > 0) ? DesiredImageSize.Y : LoadingImage->GetSurfaceHeight() * Scale.Y;
-					UE_LOG(LogTemp, Warning, TEXT("ImageWidth: %.2f Scale.X: %.2f - ImageHeight: %.2f Scale.Y: %.2f"), LoadingImage->GetSurfaceWidth(), Scale.X, LoadingImage->GetSurfaceHeight(), Scale.Y);
+					//UE_LOG(LogTemp, Warning, TEXT("ImageWidth: %.2f Scale.X: %.2f - ImageHeight: %.2f Scale.Y: %.2f"), LoadingImage->GetSurfaceWidth(), Scale.X, LoadingImage->GetSurfaceHeight(), Scale.Y);
 					CleanupBrushList.Add(FDeferredCleanupSlateBrush::CreateBrush(LoadingImage, FVector2D(Width, Height)));
 				}
 			}
